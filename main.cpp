@@ -1,6 +1,9 @@
 #include <iostream>
 
+#include "svm_context.h"
+
+
 int main(int argsc, char** args) {
-	int in = 0;
-	std::cin >> in;
+	
+	return 0;
 }
