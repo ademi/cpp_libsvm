@@ -4,11 +4,14 @@
 #include <numeric>
 #include <algorithm>
 #include <functional>
+#include<iostream>
+#include <string>
 #include "svm_context.h"
 
 svm_context::svm_context() {
 	_model = nullptr;
-	_problem = nullptr;
+	//_problem = nullptr;
+	_params = nullptr;
 
 	_initiated = false;
 }
@@ -27,13 +30,14 @@ bool svm_context::init(int samplesNo, int attributesNo) {
 	if (!_initiated) {
 		_samplesNo = samplesNo;
 		_attributesNo = attributesNo;
-		
-		// Memory Allocation
-		_problem = new LIB_SVM::svm_problem;
-		_problem->y = new double[_samplesNo];
-		_problem->x = new LIB_SVM::svm_node*[_samplesNo];
+
+		// SVM problem construction
+		//_problem = new LIB_SVM::svm_problem;
+		_problem.l = _samplesNo;
+		_problem.y = new double[_samplesNo];
+		_problem.x = new LIB_SVM::svm_node*[_samplesNo];
 		for (int i = 0; i < _samplesNo; ++i)
-			_problem->x[i] = new LIB_SVM::svm_node[_attributesNo + 1];
+			_problem.x[i] = new LIB_SVM::svm_node[_attributesNo + 1];
 
 		set_default_params();
 		_initiated = true;
@@ -62,7 +66,10 @@ bool svm_context::init(int samplesNo, int attributesNo) {
 */
 bool svm_context::update_data(std::vector<std::vector<double>> &data, std::vector<int> &labels) {
 	if(!_initiated)return false;
-	if (!_problem)return false;
+	//if (!_problem)return false;
+	if (_samplesNo != labels.size())return false;
+	_problem.l = _samplesNo;
+	// reconstructing the problem
 
 	for (auto data_it = data.begin(); data_it != data.end(); ++data_it) {
 		int row = data_it - data.begin();
@@ -70,16 +77,17 @@ bool svm_context::update_data(std::vector<std::vector<double>> &data, std::vecto
 		for (auto attribute_it = data_it->begin(); attribute_it != data_it->end(); ++attribute_it) {
 			
 			int col = attribute_it - data_it->begin();
-			_problem->x[row][col].index = col + 1;
-			_problem->x[row][col].value = *(attribute_it);
+			_problem.x[row][col].index = col + 1;
+			_problem.x[row][col].value = *(attribute_it);
 		}
 
-		int last_index = data_it->end() - data_it->begin() + 1;
-		_problem->x[row][last_index].index = -1;
-		_problem->x[row][last_index].value = 0;
+		int last_index = data_it->end() - data_it->begin();
+		_problem.x[row][last_index].index = -1;
+		_problem.x[row][last_index].value = 0;
 	}
+
 	for (auto label_it = labels.begin(); label_it != labels.end(); ++label_it) {
-		_problem->y[label_it - labels.begin()] = *label_it;
+		_problem.y[label_it - labels.begin()] = *label_it;
 	}
 	return true;
 }
@@ -111,6 +119,7 @@ void svm_context::set_default_params() {
 	_params->nr_weight = 0;
 	_params->weight_label = NULL;
 	_params->weight = NULL;
+
 }
 void svm_context::release() {
 	if (!_initiated)return;
@@ -118,15 +127,15 @@ void svm_context::release() {
 	if (_params) LIB_SVM::svm_destroy_param(_params);
 	if (_model)svm_free_and_destroy_model(&_model);
 
-	for (int row = 0; row < _problem->l; row++) {
-		delete[]_problem->x[row];
-		_problem->x[row] = nullptr;
+	for (int row = 0; row < _problem.l; row++) {
+		delete[]_problem.x[row];
+		_problem.x[row] = nullptr;
 	}
 
-	delete[]_problem->x;
-	_problem->x = nullptr;
-	delete[]_problem->y;
-	_problem->y = nullptr;
+	delete[]_problem.x;
+	_problem.x = nullptr;
+	delete[]_problem.y;
+	_problem.y = nullptr;
 
 	_initiated = false;
 }
@@ -170,7 +179,12 @@ bool svm_context::read_model_from_file(std::string file_name) {
 }
 
 LIB_SVM::svm_model* svm_context::generate_model() {
-	_model = svm_train(_problem, _params);
+	if (!_params)return nullptr;
+	//if (!_problem)return nullptr;
+	if (svm_check_parameter(&_problem, _params) != NULL)
+		std::cout << svm_check_parameter(&_problem, _params) << std::endl;
+
+	_model = svm_train(&_problem, _params);
 	return _model;
 }
 

@@ -7,7 +7,7 @@
 class svm_context {
 
 	struct LIB_SVM::svm_model *_model;
-	struct LIB_SVM::svm_problem *_problem;
+	struct LIB_SVM::svm_problem _problem;
 
 	int _samplesNo;
 	int _attributesNo;
