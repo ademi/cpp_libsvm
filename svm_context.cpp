@@ -38,6 +38,7 @@ bool svm_context::init(int samplesNo, int attributesNo) {
 		_problem->x = new LIB_SVM::svm_node*[_samplesNo];
 		for (int i = 0; i < _samplesNo; ++i)
 			_problem->x[i] = new LIB_SVM::svm_node[_attributesNo + 1];
+		_params = new LIB_SVM::svm_parameter;
 
 		set_default_params();
 		_initiated = true;
@@ -103,7 +104,6 @@ bool svm_context::init(std::vector<std::vector<double>> &data, std::vector<int> 
 	return update_data(data, labels);
 }
 void svm_context::set_default_params() {
-	_params = new LIB_SVM::svm_parameter;
 	//set all default parameters for param struct
 	_params->svm_type = LIB_SVM::C_SVC;
 	_params->kernel_type = LIB_SVM::RBF;
@@ -127,6 +127,9 @@ void svm_context::release() {
 
 	if (_params) LIB_SVM::svm_destroy_param(_params);
 	if (_model)svm_free_and_destroy_model(&_model);
+
+	delete _params; _params = nullptr;
+	delete _model; _model = nullptr;
 
 	for (int row = 0; row < _problem->l; row++) {
 		delete[]_problem->x[row];
@@ -202,11 +205,18 @@ void svm_context::make_sample(std::vector<double> attr, std::vector<LIB_SVM::svm
 	nodes.at(_attributesNo).index = -1;
 	nodes.at(_attributesNo).value = 0;
 }
-void  svm_context::predict(std::vector<double>const &attr, double *prediction, double *probability) {
+void  svm_context::predict_probability(std::vector<double>const &attr, double &prediction, std::vector<double> &probability) {
 	std::vector<LIB_SVM::svm_node>nodes(attr.size()+1);
+	probability.resize(_model->nr_class);
 	make_sample(attr, nodes);
 
-	*prediction = LIB_SVM::svm_predict_probability(_model,nodes.data(), probability);
+	prediction = LIB_SVM::svm_predict_probability(_model, nodes.data(), probability.data());
+}
+void svm_context::predict(std::vector<double>const &attr, double &prediction) {
+	std::vector<LIB_SVM::svm_node>nodes(attr.size() + 1);
+	make_sample(attr, nodes);
+
+	prediction = LIB_SVM::svm_predict(_model, nodes.data());
 }
 #endif // !SVM_CONTEXT_CPP
 

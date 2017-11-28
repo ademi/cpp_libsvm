@@ -37,7 +37,8 @@ public:
 
 	LIB_SVM::svm_model* generate_model();
 	void make_sample(std::vector<double> attr,std::vector<LIB_SVM::svm_node> &nodes);
-	void predict(std::vector<double>const &attr, double *prediction, double *probability);
+	void predict_probability(std::vector<double>const &attr, double &prediction, std::vector<double> &probability);
+	void predict(std::vector<double>const &attr, double &prediction);
 	//double getPrecsion();
 
 };
