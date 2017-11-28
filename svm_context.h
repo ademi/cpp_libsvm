@@ -7,7 +7,7 @@
 class svm_context {
 
 	struct LIB_SVM::svm_model *_model;
-	struct LIB_SVM::svm_problem _problem;
+	struct LIB_SVM::svm_problem *_problem;
 
 	int _samplesNo;
 	int _attributesNo;
@@ -37,7 +37,7 @@ public:
 
 	LIB_SVM::svm_model* generate_model();
 	void make_sample(std::vector<double> attr,std::vector<LIB_SVM::svm_node> &nodes);
-	void predict(LIB_SVM::svm_node *sample, double *prediction, double *probability);
+	void predict(std::vector<double>const &attr, double *prediction, double *probability);
 	//double getPrecsion();
 
 };
