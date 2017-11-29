@@ -24,12 +24,12 @@ int main(int argsc, char** args) {
 	label[3] = 0;
 
 	// initialize svm object with default settings
-	for (int iter = 0; iter < 100000; iter++) {
+	for (int iter = 0; iter < 500000; iter++) {
 
 		svm_context _svm;
 		if (_svm.init(attribute, label)) {
-			int k = 0;
-			LIB_SVM::svm_model *model = _svm.generate_model();
+
+				LIB_SVM::svm_model *model = _svm.generate_model();
 
 
 			std::vector<double>sample(2);
@@ -40,7 +40,7 @@ int main(int argsc, char** args) {
 			std::vector<double> probability(2);
 
 			_svm.predict_probability(sample, prediction, probability);
-			//_svm.predict(sample, prediction);
+			_svm.predict(sample, prediction);
 			std::cout
 				<< "\n***********************************\n"
 				<< "prediction: " << prediction
@@ -51,6 +51,6 @@ int main(int argsc, char** args) {
 			std::cout << "error in initializing svm" << std::endl;
 	}
 
-	getchar();
+	//getchar();
 	return 0;
 }
