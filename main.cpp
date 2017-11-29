@@ -24,11 +24,10 @@ int main(int argsc, char** args) {
 	label[3] = 0;
 
 	// initialize svm object with default settings
-	for (int iter = 0; iter < 500000; iter++) {
+	for (int iter = 0; iter < 200000; iter++) {
 
 		svm_context _svm;
 		if (_svm.init(attribute, label)) {
-
 				LIB_SVM::svm_model *model = _svm.generate_model();
 
 
@@ -49,6 +48,7 @@ int main(int argsc, char** args) {
 		}
 		else
 			std::cout << "error in initializing svm" << std::endl;
+		_svm.release();
 	}
 
 	//getchar();

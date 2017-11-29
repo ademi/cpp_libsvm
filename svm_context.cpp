@@ -27,6 +27,7 @@ svm_context::~svm_context() {
 	release();
 }
 bool svm_context::init(int samplesNo, int attributesNo) {
+
 	if (!_initiated) {
 		_samplesNo = samplesNo;
 		_attributesNo = attributesNo;
@@ -46,6 +47,25 @@ bool svm_context::init(int samplesNo, int attributesNo) {
 		return true;
 	}
 	return false;
+}
+void svm_context::release() {
+	if (!_initiated)return;
+
+	if (_params) LIB_SVM::svm_destroy_param(_params);
+	if (_model)svm_free_and_destroy_model(&_model);
+
+	delete _params; _params = nullptr;
+	//delete _model; _model = nullptr;
+
+	for (int row = 0; row < _problem->l; row++) {
+		delete[]_problem->x[row];
+		_problem->x[row] = nullptr;
+	}
+
+	delete[]_problem->x;_problem->x = nullptr;
+	delete[]_problem->y;_problem->y = nullptr;
+	delete _problem; _problem = nullptr;
+	_initiated = false;
 }
 /*
 *	initiates lib svm problem using a vector of vector that contains the training samples and a vector of integers contains
@@ -101,7 +121,7 @@ bool svm_context::init(std::vector<std::vector<double>> &data, std::vector<int> 
 		if (!init(data.size(), data.at(0).size()))
 			return false;
 	}
-	return update_data(data, labels);
+	return  update_data(data, labels);
 }
 void svm_context::set_default_params() {
 	//set all default parameters for param struct
@@ -122,27 +142,7 @@ void svm_context::set_default_params() {
 	_params->weight = NULL;
 
 }
-void svm_context::release() {
-	if (!_initiated)return;
 
-	if (_params) LIB_SVM::svm_destroy_param(_params);
-	if (_model)svm_free_and_destroy_model(&_model);
-
-	delete _params; _params = nullptr;
-	delete _model; _model = nullptr;
-
-	for (int row = 0; row < _problem->l; row++) {
-		delete[]_problem->x[row];
-		_problem->x[row] = nullptr;
-	}
-
-	delete[]_problem->x;
-	_problem->x = nullptr;
-	delete[]_problem->y;
-	_problem->y = nullptr;
-
-	_initiated = false;
-}
 
 void svm_context::scale_attributes(std::vector<double> &data){
 	double sum = std::accumulate(data.begin(), data.end(), 0.0);
