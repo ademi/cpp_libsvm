@@ -219,6 +219,3 @@ void svm_context::predict(std::vector<double>const &attr, double &prediction) {
 	prediction = LIB_SVM::svm_predict(_model, nodes.data());
 }
 #endif // !SVM_CONTEXT_CPP
-
-
-

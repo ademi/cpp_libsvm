@@ -24,33 +24,30 @@ int main(int argsc, char** args) {
 	label[3] = 0;
 
 	// initialize svm object with default settings
-	for (int iter = 0; iter < 200000; iter++) {
-
-		svm_context _svm;
-		if (_svm.init(attribute, label)) {
-				LIB_SVM::svm_model *model = _svm.generate_model();
+	svm_context _svm;
+	if (_svm.init(attribute, label)) {
+			LIB_SVM::svm_model *model = _svm.generate_model();
 
 
-			std::vector<double>sample(2);
-			sample[0] = 1;
-			sample[1] = 0;
+		std::vector<double>sample(2);
+		sample[0] = 1;
+		sample[1] = 0;
 
-			double prediction = 0;
-			std::vector<double> probability(2);
+		double prediction = 0;
+		std::vector<double> probability(2);
 
-			_svm.predict_probability(sample, prediction, probability);
-			_svm.predict(sample, prediction);
-			std::cout
-				<< "\n***********************************\n"
-				<< "prediction: " << prediction
-				<< "\nprobability: " << probability[0] << "\t" << probability[1] << std::endl;
+		_svm.predict_probability(sample, prediction, probability);
+		_svm.predict(sample, prediction);
+		std::cout
+			<< "\n***********************************\n"
+			<< "prediction: " << prediction
+			<< "\nprobability: " << probability[0] << "\t" << probability[1] << std::endl;
 
-		}
-		else
-			std::cout << "error in initializing svm" << std::endl;
-		_svm.release();
 	}
+	else
+		std::cout << "error in initializing svm" << std::endl;
+	_svm.release();
 
-	//getchar();
+	getchar();
 	return 0;
 }
